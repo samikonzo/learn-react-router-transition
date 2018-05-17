@@ -1,9 +1,13 @@
 import React, { Component } from 'react'
 import { Route, withRouter, Link, Redirect } from 'react-router-dom'
 
+let l = console.log
+
+
 let auth = {
 	isAuth: false,
 	login(cb){
+		l(this)
 		this.isAuth = true
 		setTimeout(cb, 1000)
 	},
@@ -20,8 +24,8 @@ class App extends Component{
 				<LogoutBtn />
 
 				<ul>
-					<li> <Link to="/public"/> Public </li>
-					<li> <Link to="/private"/> Private </li>
+					<li> <Link to="/public"> Public  </Link></li>
+					<li> <Link to="/private"> Private </Link></li>
 				</ul>
 
 				<Route path='/public' component={Public} />
@@ -41,18 +45,22 @@ let LogoutBtn = () => {
 }
 
 let Login = () => (
-	<button onClick={auth.login}> Login </button>
+	<button 
+		onClick={() => { auth.login() } 
+	}> Login </button>
 )
 
-let Public = () => {}
+let Public = () => ( <h3> Public </h3> )
 
-let Private = () => {}
+let Private = () => ( <h3> Private </h3> )
 
 let PrivateRoute = ({component: Component, ...rest}) => (
-	auth.isAuth ? 
-		<Route path=>
-		<Component {...rest}/> :
-		<Redirect to={{path: '/login'}} />
+	<Route 
+		{...rest}
+		component={(props) => {
+			return ( auth.isAuth ? <Component {...props}/> : <Redirect to={{pathname: '/login'}} /> )
+		}}
+	/>
 )
 
 
