@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import { Route, withRouter, Link, Redirect } from 'react-router-dom'
+import { Route, withRouter, Link, Redirect, Switch } from 'react-router-dom'
+import Inside from './Inside.jsx'
+
 
 let l = console.log
 
@@ -25,13 +27,30 @@ class App extends Component{
 				<ul>
 					<li> <Link to="/public"> Public  </Link></li>
 					<li> <Link to="/private"> Private </Link></li>
+					<li> <Link to="/lol-one"> lol-one </Link> </li>
+					<li> <Link to="/inside"> insidee </Link> </li>
 				</ul>
 
-				<Route path='/public' component={Public} />
-				<PrivateRoute path='/private' component={Private}/>
-				<PrivateRoute path='/(private|lol-one|kek-two|foo-three|bar-four)/' component={PageChanger} paths={['lol-one', 'kek-two', 'foo-three', 'bar-four']}/>
-				{/* <PageChanger paths={['lol-one', 'kek-two', 'foo-three', 'bar-four']} lastComponent={() => (<div> last component </div>)}/> */}
-				<Route path='/login' component={Login}/>
+				<Switch>
+					<Route path="/inside" component={Inside}/>
+					<Route render={(props) => (
+						<div>
+							<Route path='/public' component={Public} />
+							<PrivateRoute path='/private' component={Private}/>
+							<PrivateRoute path='/(private|lol-one|kek-two|foo-three|bar-four)/' component={PageChanger} paths={['lol-one', 'kek-two', 'foo-three', 'bar-four']}/>
+							<Route path='/login' component={Login}/>
+							<Route path='/(lol-one|kek-two|foo-three|bar-four)/' render={props => {
+								l(props)
+								return ( 
+									<div>
+										<h3> match place </h3>
+										{props.match.params[0]}
+									</div> 
+								)
+							}}/>
+						</div>
+					)}/>
+				</Switch>
 			</div>
 		)
 	}
@@ -94,12 +113,6 @@ let PrivateRoute = ({component: Component, ...rest}) => (
 				...props,
 				...rest
 			}
-
-
-			//l(props)
-			//l(rest)
-			//l(concatProps)
-			//l(' ')
 
 			return ( auth.isAuth ? <Component {...concatProps}/> : <Redirect to={{pathname: '/login', state: {from: props.location}}} /> )
 		}}
