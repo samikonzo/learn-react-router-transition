@@ -7,7 +7,6 @@ let l = console.log
 let auth = {
 	isAuth: false,
 	login(cb){
-		l(this)
 		this.isAuth = true
 		setTimeout(cb, 1000)
 	},
@@ -30,6 +29,8 @@ class App extends Component{
 
 				<Route path='/public' component={Public} />
 				<PrivateRoute path='/private' component={Private}/>
+				<PrivateRoute path='/(private|lol-one|kek-two|foo-three|bar-four)/' component={PageChanger} paths={['lol-one', 'kek-two', 'foo-three', 'bar-four']}/>
+				{/* <PageChanger paths={['lol-one', 'kek-two', 'foo-three', 'bar-four']} lastComponent={() => (<div> last component </div>)}/> */}
 				<Route path='/login' component={Login}/>
 			</div>
 		)
@@ -38,17 +39,47 @@ class App extends Component{
 
 
 
-let LogoutBtn = () => {
+let LogoutBtn = withRouter(({ history }) => {
 	return (
-		auth.isAuth && <button onClick={auth.logout}>logout</button>
+		auth.isAuth && <button onClick={() => { auth.logout(() => { history.push('/') }) }}>logout</button>
 	)	
-}
+})
 
-let Login = () => (
-	<button 
-		onClick={() => { auth.login() } 
-	}> Login </button>
-)
+class Login extends Component{
+	state = {
+		redirected: false
+	}
+
+	login(){
+		auth.login(() => {
+			this.setState({
+				redirected: true
+			})
+		})
+	}
+
+	setRedirectedToTrue(){
+		
+	}
+
+	render(){
+		let { from } = this.props.location.state || {from : '/'} 
+
+		//l(from)
+
+		if(this.state.redirected){ 
+			return (<Redirect to={from} />)
+		}
+
+		return(
+			<button 
+				onClick={() => { this.login() } 
+			}> 
+				Login 
+			</button>
+		)
+	}
+}
 
 let Public = () => ( <h3> Public </h3> )
 
@@ -58,17 +89,58 @@ let PrivateRoute = ({component: Component, ...rest}) => (
 	<Route 
 		{...rest}
 		component={(props) => {
-			return ( auth.isAuth ? <Component {...props}/> : <Redirect to={{pathname: '/login'}} /> )
+
+			let concatProps = {
+				...props,
+				...rest
+			}
+
+
+			//l(props)
+			//l(rest)
+			//l(concatProps)
+			//l(' ')
+
+			return ( auth.isAuth ? <Component {...concatProps}/> : <Redirect to={{pathname: '/login', state: {from: props.location}}} /> )
 		}}
 	/>
 )
 
 
 
+class PageChangerWithoutRouter extends Component{
+	state = {
+		num: 0
+	}
 
+	componentDidMount(){
+		l(this.props)
+	}
 
+	run(){
+		
 
+		let that = this
+		let { history, paths } = this.props
+		let num = 0
 
+		setTimeout(function f(){
+			history.push(paths[num++])
 
+			if(paths.length > num) setTimeout(f, 2000)
+			/*that.setState({num: ++that.state.num},
+				() => {
+					l('paths.length : ', paths.length)
+					l('that.state.num : ', that.state.num)
+					if(paths.length > that.state.num) setTimeout(f, 2000)		
+				}
+			)*/
+		}, 0)
+	}	
+
+	render = () => <button onClick={() => { this.run()  }}> run </button>
+}
+
+let PageChanger = withRouter(PageChangerWithoutRouter)
 
 export default App
