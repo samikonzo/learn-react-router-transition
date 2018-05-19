@@ -18,6 +18,12 @@ module.exports = {
 					presets:["stage-0","react"]
 				}
 			},
+
+			{
+				test: /\.less$/,
+				exclude: /(node_modules)/,
+				use: ['style-loader' , 'css-loader', 'less-loader']
+			}
 		]
 	},
 	devServer: {

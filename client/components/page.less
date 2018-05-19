@@ -1,0 +1,53 @@
+.Page_wrapper{
+	position: relative;
+}
+
+.Page{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 400px;
+	height: 400px;
+	border: 1px dashed grey;
+
+	display: flex;
+	flex-flow: column;
+	justify-content: center;
+	-ms-align-items: center;
+	align-items: center;
+
+	&0{
+		background: #5a8a8a;
+	}
+	&1{
+		background: #cad8c5
+	}
+	&2{
+		background: #fdeacf
+	}
+	&NotFound{
+		background: #f4ca95
+	}
+}
+
+.fade{
+	&-enter{
+		opacity: 0;
+		z-index: 99;
+
+		&&-active{
+			opacity: 1; 
+			transition: opacity 1000ms
+		}
+	}
+
+	&-exit {
+		opacity: 1;
+
+		&&-active{
+			opacity: 1; 
+			transition: opacity 1000ms
+		}
+	}
+
+}

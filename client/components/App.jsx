@@ -1,9 +1,6 @@
 import React, { Component } from 'react'
-import { Route, withRouter, Link, Redirect, Switch } from 'react-router-dom'
-import Inside from './Inside.jsx'
-
-
-let l = console.log
+import { Route, Link, Redirect, withRouter } from 'react-router-dom'
+import Animated from './Animated.jsx'
 
 
 let auth = {
@@ -15,145 +12,99 @@ let auth = {
 	logout(cb){
 		this.isAuth = false
 		setTimeout(cb, 1000)
-	}
+	},
 }
 
 class App extends Component{
-	render(){
-		return(
-			<div>
-				<LogoutBtn />
-
-				<ul>
-					<li> <Link to="/public"> Public  </Link></li>
-					<li> <Link to="/private"> Private </Link></li>
-					<li> <Link to="/lol-one"> lol-one </Link> </li>
-					<li> <Link to="/inside"> insidee </Link> </li>
-				</ul>
-
-				<Switch>
-					<Route path="/inside" component={Inside}/>
-					<Route render={(props) => (
-						<div>
-							<Route path='/public' component={Public} />
-							<PrivateRoute path='/private' component={Private}/>
-							<PrivateRoute path='/(private|lol-one|kek-two|foo-three|bar-four)/' component={PageChanger} paths={['lol-one', 'kek-two', 'foo-three', 'bar-four']}/>
-							<Route path='/login' component={Login}/>
-							<Route path='/(lol-one|kek-two|foo-three|bar-four)/' render={props => {
-								l(props)
-								return ( 
-									<div>
-										<h3> match place </h3>
-										{props.match.params[0]}
-									</div> 
-								)
-							}}/>
-						</div>
-					)}/>
-				</Switch>
-			</div>
-		)
-	}
+	render = () => (
+		<div> 
+			<Header />
+			<Nav />
+			<Main />
+		</div>
+	)
 }
 
-
-
-let LogoutBtn = withRouter(({ history }) => {
+let Header = () => {
 	return (
-		auth.isAuth && <button onClick={() => { auth.logout(() => { history.push('/') }) }}>logout</button>
-	)	
-})
+		<div className='Header'>
+			<h1> React Route </h1>
+
+			
+			{auth.isAuth && <Logout />}
+		</div>
+	)
+}
+
+let Nav = () => {
+	return (
+		<ul>
+			<li> <Link to="/"> Home </Link> </li>
+			<li> <Link to="/public"> Public </Link> </li>
+			<li> <Link to="/private"> Private </Link> </li>
+			<li> <Link to="/animated"> Animated </Link> </li> 
+		</ul>
+	)
+}
+
+let Main = () => (
+	<div className="Main">
+		<Route exact path='/' component={Home}/>
+		<Route path='/public' component={Public}/> 
+		<PrivateRoute path='/private' component={Private}/>
+		<Route path='/login' component={Login}/>
+		<Route path='/animated' component={Animated}/>
+	</div>
+)
+
+let Home = () => (<h3>Home</h3>)
+let Public = () => (<h3>Public</h3>)
+let Private = () => (<h3>Private</h3>)
+
+let PrivateRoute = ({ component: Component, ...rest }) => {
+
+	return (
+		<Route {...rest} component={(props) => {
+			l(props)
+
+			return ( auth.isAuth ? <Component /> : <Redirect to={{pathname: '/login', state: {from: props.location}}}/> )
+		}} />
+	)
+}
 
 class Login extends Component{
 	state = {
-		redirected: false
+		fromReferrer : false
 	}
 
 	login(){
-		auth.login(() => {
-			this.setState({
-				redirected: true
-			})
-		})
-	}
-
-	setRedirectedToTrue(){
-		
+		auth.login( () => { this.setState({ fromReferrer : true }) })
 	}
 
 	render(){
-		let { from } = this.props.location.state || {from : '/'} 
 
-		//l(from)
+		let { from } = this.props.location.state.pathname || {from: '/'}
+		let { fromReferrer } = this.state
 
-		if(this.state.redirected){ 
-			return (<Redirect to={from} />)
-		}
+		l(this.props)
+		l(from)
+
+		if( fromReferrer ) return <Redirect to={ {pathname: from} }/>
 
 		return(
-			<button 
-				onClick={() => { this.login() } 
-			}> 
-				Login 
-			</button>
+			<button onClick={() => { this.login() }}> Login </button>
 		)
 	}
 }
 
-let Public = () => ( <h3> Public </h3> )
-
-let Private = () => ( <h3> Private </h3> )
-
-let PrivateRoute = ({component: Component, ...rest}) => (
-	<Route 
-		{...rest}
-		component={(props) => {
-
-			let concatProps = {
-				...props,
-				...rest
-			}
-
-			return ( auth.isAuth ? <Component {...concatProps}/> : <Redirect to={{pathname: '/login', state: {from: props.location}}} /> )
-		}}
-	/>
-)
-
-
-
-class PageChangerWithoutRouter extends Component{
-	state = {
-		num: 0
+let Logout = withRouter(({ history }) => {
+	let logout = () => {
+		auth.logout( () => {history.push('/')} )
 	}
 
-	componentDidMount(){
-		l(this.props)
-	}
+	return <button onClick={logout}> Logout </button>
+})
 
-	run(){
-		
 
-		let that = this
-		let { history, paths } = this.props
-		let num = 0
 
-		setTimeout(function f(){
-			history.push(paths[num++])
-
-			if(paths.length > num) setTimeout(f, 2000)
-			/*that.setState({num: ++that.state.num},
-				() => {
-					l('paths.length : ', paths.length)
-					l('that.state.num : ', that.state.num)
-					if(paths.length > that.state.num) setTimeout(f, 2000)		
-				}
-			)*/
-		}, 0)
-	}	
-
-	render = () => <button onClick={() => { this.run()  }}> run </button>
-}
-
-let PageChanger = withRouter(PageChangerWithoutRouter)
-
-export default App
+export default App 

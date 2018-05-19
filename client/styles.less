@@ -1,0 +1,22 @@
+body{
+}
+
+.fade-ender{
+	opacity: 0;
+	z-index: 1;
+
+	&&-active{
+		opacity: 1;
+		transition: opacity .25s ease-in
+	}
+}
+
+
+
+.test{
+	background: blue;
+
+	&&-test{
+		background: green
+	}
+}
